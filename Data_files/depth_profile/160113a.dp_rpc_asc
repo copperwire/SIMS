@@ -1,0 +1,213 @@
+*** DATA FILES ***
+
+Raw data file name(s)	160113a.dp
+Sample ID		850c	
+Sample code			
+Data process ID			
+Analysis date		01/13/2016
+Analysis time		09:59	
+Analysis recipe name	IZO_TD.rdp
+
+*** DATA START ***
+
+160113a.dp
+7Li					23Na					70Zn					113In
+Time	Depth[um]	I[cnt/s]	Time	Depth[um]	I[cnt/s]	Time	Depth[um]	I[cnt/s]	Time	Depth[um]	I[cnt/s]
+	9.77304E-003	5.04859E+005		2.50929E-002	3.58267E+005		3.56584E-002	3.75977E+004		4.59597E-002	9.91065E+006
+	5.41479E-002	5.38187E+005		6.10155E-002	5.71378E+005		6.81471E-002	3.45991E+004		7.60712E-002	1.04296E+007
+	8.37312E-002	5.07125E+005		9.03346E-002	6.77423E+005		9.74663E-002	3.35400E+004		1.05390E-001	1.10574E+007
+	1.13050E-001	4.88254E+005		1.37879E-001	2.98215E+005		1.60859E-001	3.24911E+004		1.68783E-001	9.47539E+006
+	1.78028E-001	3.35351E+005		1.87008E-001	5.36548E+006		1.93348E-001	3.25083E+004		2.01272E-001	9.96925E+006
+	2.10252E-001	9.32302E+005		2.18705E-001	1.66238E+007		2.25044E-001	3.09756E+004		2.32968E-001	9.32472E+006
+	2.41156E-001	3.00345E+005		2.48552E-001	3.08694E+005		2.55948E-001	2.28170E+004		2.63608E-001	9.18817E+003
+	2.72324E-001	1.90775E+005		2.78928E-001	1.49444E+004		2.86059E-001	2.27411E+004		2.93191E-001	4.19898E+003
+	3.01644E-001	1.72121E+005		3.08247E-001	8.20325E+003		3.15379E-001	2.26521E+004		3.22510E-001	3.31908E+003
+	3.30963E-001	1.57065E+005		3.37566E-001	3.57163E+003		3.44698E-001	2.22980E+004		3.51829E-001	2.83520E+003
+	3.60282E-001	1.44093E+005		3.66885E-001	1.93518E+003		3.74017E-001	2.18498E+004		3.81149E-001	2.44226E+003
+	3.89601E-001	1.31328E+005		3.96204E-001	1.34329E+003		4.03336E-001	2.16404E+004		4.10468E-001	2.13417E+003
+	4.18920E-001	1.20252E+005		4.25523E-001	7.45356E+002		4.32655E-001	2.13613E+004		4.39787E-001	1.88367E+003
+	4.48239E-001	1.09819E+005		4.54842E-001	5.85778E+002		4.61974E-001	2.11903E+004		4.69106E-001	1.78064E+003
+	4.77558E-001	1.01025E+005		4.84162E-001	4.99929E+002		4.91293E-001	2.10193E+004		4.98425E-001	1.53015E+003
+	5.06877E-001	9.06953E+004		5.13481E-001	4.37311E+002		5.20612E-001	2.07331E+004		5.27744E-001	1.25137E+003
+	5.36196E-001	8.11635E+004		5.42800E-001	4.10042E+002		5.49932E-001	2.08373E+004		5.57063E-001	1.16754E+003
+	5.65516E-001	6.89850E+004		5.72119E-001	4.01962E+002		5.79251E-001	2.05136E+004		5.86382E-001	9.78667E+002
+	5.94835E-001	4.71888E+004		6.01438E-001	2.74706E+002		6.08570E-001	2.05449E+004		6.15701E-001	1.76741E+002
+	6.24154E-001	2.13543E+004		6.30757E-001	1.54522E+002		6.37889E-001	1.99664E+004		6.45021E-001	1.71690E+001
+	6.53473E-001	1.04350E+004		6.60076E-001	1.04024E+002		6.67208E-001	2.00402E+004		6.74340E-001	8.07952E+000
+	6.82792E-001	6.48890E+003		6.89395E-001	9.29147E+001		6.96527E-001	1.96710E+004		7.03659E-001	7.06958E+000
+	7.12111E-001	5.00852E+003		7.18715E-001	9.29148E+001		7.25846E-001	1.95446E+004		7.32978E-001	6.05964E+000
+	7.41430E-001	4.57504E+003		7.48034E-001	9.08948E+001		7.55165E-001	1.95153E+004		7.62297E-001	6.05964E+000
+	7.70749E-001	4.45481E+003		7.77353E-001	9.49347E+001		7.84484E-001	1.93292E+004		7.91616E-001	5.04970E+000
+	8.00069E-001	4.39923E+003		8.06672E-001	9.19048E+001		8.13804E-001	1.91208E+004		8.20935E-001	4.03976E+000
+	8.29388E-001	4.29719E+003		8.35991E-001	9.49346E+001		8.43123E-001	1.91623E+004		8.50254E-001	9.08946E+000
+	8.58707E-001	4.33963E+003		8.65310E-001	1.15134E+002		8.72442E-001	1.90450E+004		8.79573E-001	6.05964E+000
+	8.88026E-001	4.35377E+003		8.94629E-001	8.18053E+001		9.01761E-001	1.88123E+004		9.08893E-001	3.02982E+000
+	9.17345E-001	4.38408E+003		9.23948E-001	1.04024E+002		9.31080E-001	1.88467E+004		9.38212E-001	9.08946E+000
+	9.46664E-001	4.54676E+003		9.53268E-001	1.04024E+002		9.60399E-001	1.86879E+004		9.67531E-001	9.08946E+000
+	9.75983E-001	4.70237E+003		9.82587E-001	9.99844E+001		9.89718E-001	1.87112E+004		9.96850E-001	6.05964E+000
+	1.00530E+000	4.79633E+003		1.01191E+000	8.78650E+001		1.01904E+000	1.82672E+004		1.02617E+000	5.04970E+000
+	1.03462E+000	4.83574E+003		1.04122E+000	8.88749E+001		1.04836E+000	1.83421E+004		1.05549E+000	6.05964E+000
+	1.06394E+000	4.86909E+003		1.07054E+000	9.19048E+001		1.07768E+000	1.83299E+004		1.08481E+000	5.04970E+000
+	1.09326E+000	4.82159E+003		1.09986E+000	9.89744E+001		1.10699E+000	1.82288E+004		1.11413E+000	4.03976E+000
+	1.12258E+000	5.01257E+003		1.12918E+000	9.99844E+001		1.13631E+000	1.82551E+004		1.14345E+000	3.02982E+000
+	1.15190E+000	4.87110E+003		1.15850E+000	9.29147E+001		1.16563E+000	1.80670E+004		1.17276E+000	8.07952E+000
+	1.18122E+000	4.78116E+003		1.18782E+000	8.68551E+001		1.19495E+000	1.82045E+004		1.20208E+000	1.00994E+001
+	1.21054E+000	4.96608E+003		1.21714E+000	8.38252E+001		1.22427E+000	1.84402E+004		1.23140E+000	5.04970E+000
+	1.23986E+000	4.86099E+003		1.24646E+000	9.89744E+001		1.25359E+000	1.82864E+004		1.26072E+000	1.00994E+001
+	1.26917E+000	4.65285E+003		1.27578E+000	9.29147E+001		1.28291E+000	1.79790E+004		1.29004E+000	8.07952E+000
+	1.29849E+000	4.77410E+003		1.30510E+000	7.47357E+001		1.31223E+000	1.78485E+004		1.31936E+000	6.05964E+000
+	1.32781E+000	4.70741E+003		1.33442E+000	8.98849E+001		1.34155E+000	1.76564E+004		1.35026E+000	7.06958E+000
+
+*** DATA END ***
+
+*** ANALYSIS POSITION ***
+
+Data file name(s)	160113a.dp
+Shuttle_ID		18_holes_new
+Stage coordinates
+X(um)			-800	
+Y(um)			-4784	
+Z(um)			0	
+Window coordinates
+X(um)			471	
+Y(um)			335	
+Sample coordinates
+X(um)			471	
+Y(um)			335	
+
+*** ANALYSIS RECIPE ***
+
+File name(s)		IZO_TD.rdp
+Creation date		01/13/2016
+Creation time		09:59	
+
+*** ACQUISITION PARAMETERS ***
+
+Data file name(s)		160113a.dp
+# of data point/species		44	
+Total sputtering time (s)	409	
+Total acquisition time (s)	415	
+Crater depth measurement	No	
+   Total depth (nm)			
+Frame number/data point		1	
+Sputtering for waiting time	Yes	
+Pre-sputtering			No	
+   Time (s)				
+Reference signal		No	
+   Species				
+   Integration time (s)			
+   Mass calibration			
+Mass calib monitoring		No	
+   Species				
+   Cycle # for first control		
+   Control period (cycles)		
+   # data point per peak width		
+   Counting time			
+   # of mass scans			
+HV sample monitoring		No	
+   Species				
+   Cycle # for first control		
+   Control period (cycles)		
+   Offset min (V)			
+   Offset max (V)			
+   Offset step (V)			
+   Energy pass band (eV)		
+   Energy gap (eV)			
+   Counting time			
+Comments				
+
+
+*** MEASUREMENT CONDITIONS, 160113a.dp ***:
+
+Species         | Mass (amu) | Mass (field) | Detector | WT(s)   | Extra WT(s) | CT(s)   | Offset
+-------------------------------------------------------------------------------------------------
+7Li             | 7.016      | 538716       | EM       | 0.880   | 0.640       | 1.040   | 0
+23Na            | 22.990     | 967195       | EM       | 0.720   | 0.240       | 1.040   | 0
+70Zn            | 69.925     | 1677219      | EM       | 0.800   | 0.320       | 1.040   | 0
+113In           | 112.904    | 2125262      | EM       | 0.720   | 0.400       | 1.040   | 0
+
+*** MAIN ANALYTICAL PARAMETERS (MAP) ***
+
+Data file name(s)		160113a.dp
+ISF file name			160113duo_10kev+15+5.D6
+Primary ions			O2+	
+Primary column			Non-Floating
+Impact energy (eV)		10010	
+Secondary ion polarity		+	
+Secondary ion energy (V)	4990	
+
+*** OPTIONAL INSTRUMENTAL PARAMETERS (OIP) ***
+
+Data file name(s)		160113a.dp
+Prim beam preset		0	
+Prim beam intensity @t=0 (nA)	2.002E+002
+Prim beam intensity @t=end (nA)	2.125E+002
+Prim beam intensity regulation	No	
+Raster size (um)		150	
+DTOS				Off	
+Analyzed area size (um)		62	
+EGate rate (%)			80	
+Mass resolution			400	
+Field aperture (um)		750	
+Contrast aperture (um)		150	
+Entrance slit (um)		401	
+Exit slit (um)			599	
+Energy window (eV)		195	
+Energy slit offset (eV)		73	
+PBMF aperture (um)		-	
+LPRIM4 aperture (um)		-	
+Rotation			Off	
+Speed (rpm)			0.020	
+
+*** ION DETECTOR PARAMETERS ***
+
+Data file name(s)		160113a.dp
+EM yield (%)			9.5E+001
+EM HV (V)			3386	
+EM discriminator threshold (mV)	82	
+EM background (c/s)		0.0E+000
+EM dead time (ns)		2.5E+001
+EM -> FC threshold (c/s)	694356	
+FC -> EM threshold (c/s)	568110	
+
+*** OTHERS ***
+
+Data file name(s)		160113a.dp
+Oxygen flooding			No	
+Analysis chamber press (mbar)	4.0E-009
+Electron gun			Yes	
+   e-gun HV			-5.0E+003
+   e-beam current		1.8E-003
+
+*** CALIBRATION PARAMETERS ***
+
+Data File name(s)	160113a.dp
+Layer #1 matrix		64Zn 16O 	
+  1st Interface (nm)	0.000E+000	
+  2nd Interface (nm)	1.350E+003	
+  Depth calib method	Depth		
+  Mean SR (nm/min)	1.981E+002	
+    Species		7Li		
+      Conc calib method	
+      RSF  (at/cm3)	
+      Dose (at/cm2)	
+      [C]  (at/cm3)	
+      Ref signal	
+    Species		23Na		
+      Conc calib method	
+      RSF  (at/cm3)	
+      Dose (at/cm2)	
+      [C]  (at/cm3)	
+      Ref signal	
+    Species		70Zn		
+      Conc calib method	
+      RSF  (at/cm3)	
+      Dose (at/cm2)	
+      [C]  (at/cm3)	
+      Ref signal	
+    Species		113In		
+      Conc calib method	
+      RSF  (at/cm3)	
+      Dose (at/cm2)	
+      [C]  (at/cm3)	
+      Ref signal	
