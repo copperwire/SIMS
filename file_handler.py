@@ -27,6 +27,7 @@ class file_handler:
 	def __init__(self, filename):
 		"""Gets the filename from which the data is collected. """
 		self.filename = filename 
+		self.has_iterated = False
 
 	def file_iteration(self, delim = "***"):
 		"""
@@ -42,6 +43,7 @@ class file_handler:
 		delimiter. 
 
 		"""
+		self.has_iterated = True
 
 		num_lines = sum(1 for line in open(self.filename))
 
@@ -84,10 +86,24 @@ class file_handler:
 		sample info = nested list containing sample id, original filename, sample code etc.
 		sample name = name of the element measured by the SIMS process  
 		"""
-		try:
+		try:	
 			data_set = getattr(self, data_name)
-		except:
-			raise TypeError("No attribute of class with name %s. Check that there are no extra spaces in variable name.") %data_name
+		
+		except AttributeError:
+			print("class has no attribute named %s. Trying to fix") %data_name
+			if self.has_iterated:
+				new_name = data_name.strip()
+				try:
+					data_set = getattr(self, new_name)
+				except AttributeError:
+					sys.exit("Unfixable:(")
+			else: 
+				self.file_iteration()
+				try:
+					data_set = getattr(self, data_name)
+					print("fix'd. Don't thank me or anything. I'm just a program")
+				except AttributeError:
+					sys.exit("Unfixable:(")
 
 		self.substances = data_set[key_row[0]].split(" ")
 		units = data_set[key_row[1]].split(" ")
@@ -100,7 +116,7 @@ class file_handler:
 
 		reshaping = np.shape(x)
 		u = np.reshape(x, (reshaping[0], reshaping[1]))
-	
+
 		variables_per_substance = len(x[0])/len(self.substances)
 
 		self.list_of_datasets = []
@@ -118,6 +134,9 @@ class file_handler:
 
 			setattr(self, name, y)
 			self.list_of_datasets.append(getattr(self, name))
+
+
+
 
 		return self.list_of_datasets
 

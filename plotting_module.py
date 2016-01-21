@@ -16,9 +16,11 @@ class plotter:
 	def plot_machine(self): 
 
 		class_instance = file_handler(self.filename)
-		names, data_sets = class_instance.runtime()
+		class_instance.file_iteration()
+		data_sets = class_instance.data_conversion()
+		names = getattr(class_instance, "substances") 
 
-		if len(getattr(class_instance, "substances")) > 2:			
+		if len(names) > 2:			
 
 			host = host_subplot(111, axes_class = AA.Axes)
 			plt.subplots_adjust(right = 0.75)
@@ -62,17 +64,14 @@ class plotter:
 			x_val = data_set["data"][0]
 			y_val = data_set["data"][1]
 
+			x_val = x_val.copy(order = "C")
+
 			x_unit = data_set["x_unit"]
 			y_unit = data_set["y_unit"]
-
-			print data_set["sample info"]
-
-			
-			plt.plot(x_val, y_val, label = data_set["sample info"][2])
+		
+			plt.semilogy(x_val, y_val, label = data_set["sample info"][2], nonposy = "clip")
 			plt.xlabel(x_unit)
 			plt.ylabel(y_unit)
-			#plt.yscale("log")
-
 			plt.legend()
 			plt.show()
 
