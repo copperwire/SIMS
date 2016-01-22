@@ -11,6 +11,8 @@ test_2 = plotter(filevname_2)
 test_2.plot_machine()
 """
 
-filename = "/home/solli/Documents/Prosjektoppgave/Data_files/depth_profile/151118h.dp_rpc_asc"
+filename = ["/home/solli/Documents/Prosjektoppgave/Data_files/depth_profile/151118h.dp_rpc_asc"
+			,"/home/solli/Documents/Prosjektoppgave/Data_files/depth_profile/151112s.dp_rpc_asc"]
 test = interactive_plotting(filename)
 test.data_generation()
+test.plotting()

@@ -1,4 +1,8 @@
-import bokeh as bk 
+from bokeh.models.widgets import Panel, Tabs
+from bokeh.io import output_file, show
+from bokeh.plotting import figure
+from bokeh.models import Range1d, LogAxis
+
 import numpy as np 
 from file_handler import file_handler
 
@@ -26,7 +30,7 @@ class interactive_plotting:
 		x_unit = string with physical unit of data[0]
 		y_unit = string with physical unit of data[1]
 		sample info = nested list containing sample id, original filename, sample code etc.
-		sample name = name of the element measured by the SIMS process  		 
+		sample element = name of the element measured by the SIMS process  		 
 		"""
 
 		self.attribute_ids = []
@@ -45,7 +49,49 @@ class interactive_plotting:
 			setattr(self, attr_id, data_sets)
 
 	def plotting(self):
-		return
+
+		tab_plots = []
+		output_file("test.html")
+
+		for attr_id in self.attribute_ids:
+	
+			list_of_datasets = getattr(self, attr_id)
+			y_axis_units = [x["y_unit"] for x in list_of_datasets]
+			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log")
+			figure_obj.yaxis.axis_label = y_axis_units[0]
+
+			if not all(x == y_axis_units[0] for x in y_axis_units):
+				for unit in y_axis_units: 
+					if not unit == y_axis_units[0]:
+						figure_obj.extra_y_ranges =  {"foo": Range1d(start = np.amin(y_data), end = np.amax(y_data))}
+						figure_obj.add_layout(LogAxis(y_range_name = "foo", axis_label = unit), "right")
+						break
+
+			figure_obj.line(list_of_datasets[0]["data"][0], list_of_datasets[0]["data"][1], legend = list_of_datasets[0]["sample element"])
+			figure_obj.xaxis.axis_label = list_of_datasets[0]["x_unit"]
+
+			for dataset in list_of_datasets[1:]:
+
+				x_data = dataset["data"][0]
+				y_data = dataset["data"][1]
+				
+				if not dataset["y_unit"] == y_axis_units[0] : 
+					"""
+					Assumes one scale for Intensity and a shift of some orders of maginitude in the conversion to Concentration.
+					"""
+					figure_obj.line(x_data, y_data, line_width = 2, legend = dataset["sample element"], y_range_name = "foo")
+
+				else: 
+					figure_obj.line(x_data, y_data, line_width = 2, legend = dataset["sample element"])	
+					#figure_obj.yaxis[0].axis_label = dataset["y_unit"]
+			tab_plots.append(Panel(child = figure_obj, title = attr_id))
+
+		tabs = Tabs(tabs = tab_plots)
+		show(tabs)
+
+
+
+
 
 
 	def find_file_path(self, filename):
