@@ -3,6 +3,7 @@ from bokeh.io import output_file, show
 from bokeh.plotting import figure
 from bokeh.models import Range1d, LogAxis
 
+import random
 import numpy as np 
 from file_handler import file_handler
 
@@ -25,12 +26,14 @@ class interactive_plotting:
 		sample id = 600c
 
 		then the attribute "151118h_600c" exists as a variable in the class. The attribute is a list of dictionaries
-		with keys:
-		data = 2 x n nested list where data[0] contains all data points corresponding to the key \" x_unit \"
-		x_unit = string with physical unit of data[0]
-		y_unit = string with physical unit of data[1]
-		sample info = nested list containing sample id, original filename, sample code etc.
-		sample element = name of the element measured by the SIMS process  		 
+		with keys such that for each index of  the attribute:
+
+		151118h_600c[i] for i in [number of files]:
+			data = 2 x n nested list where data[0] contains all data points corresponding to the key \" x_unit \"
+			x_unit = string with physical unit of data[0]
+			y_unit = string with physical unit of data[1]
+			sample info = nested list containing sample id, original filename, sample code etc.
+			sample element = name of the element measured by the SIMS process  		 
 		"""
 
 		self.attribute_ids = []
@@ -52,9 +55,15 @@ class interactive_plotting:
 
 		tab_plots = []
 		output_file("test.html")
+		self.all_elements = []
+		self.elements_comparison = []
+
 
 		for attr_id in self.attribute_ids:
-	
+			
+			"""
+			create plots for each datafile and put them in a tab.
+			"""
 			list_of_datasets = getattr(self, attr_id)
 			y_axis_units = [x["y_unit"] for x in list_of_datasets]
 			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log")
@@ -67,31 +76,67 @@ class interactive_plotting:
 						figure_obj.add_layout(LogAxis(y_range_name = "foo", axis_label = unit), "right")
 						break
 
-			figure_obj.line(list_of_datasets[0]["data"][0], list_of_datasets[0]["data"][1], legend = list_of_datasets[0]["sample element"])
 			figure_obj.xaxis.axis_label = list_of_datasets[0]["x_unit"]
+			colour_list = [(51, 153, 51) ,(153, 51, 51), (51, 51, 153), (153, 51,153 ), (153, 51, 51)]
 
-			for dataset in list_of_datasets[1:]:
+
+			for dataset in list_of_datasets:
+
+				self.all_elements.append(dataset["sample element"]) #strip isotope number 
+				color = random.choice(colour_list)
+				colour_list.remove(color)
 
 				x_data = dataset["data"][0]
 				y_data = dataset["data"][1]
-				
+
 				if not dataset["y_unit"] == y_axis_units[0] : 
 					"""
 					Assumes one scale for Intensity and a shift of some orders of maginitude in the conversion to Concentration.
 					"""
-					figure_obj.line(x_data, y_data, line_width = 2, legend = dataset["sample element"], y_range_name = "foo")
+					figure_obj.line(x_data, y_data, line_width = 2, line_color = color, legend = dataset["sample element"], y_range_name = "foo")
 
 				else: 
-					figure_obj.line(x_data, y_data, line_width = 2, legend = dataset["sample element"])	
+					figure_obj.line(x_data, y_data, line_width = 2, line_color = color, legend = dataset["sample element"])	
 					#figure_obj.yaxis[0].axis_label = dataset["y_unit"]
 			tab_plots.append(Panel(child = figure_obj, title = attr_id))
 
+		"""
+		Check to see if one or more element exists in the samples and creat a comparison plot for each 
+		of those elements.
+		"""
+		
+		for element in self.all_elements:
+			checkers = list(self.all_elements)
+			checkers.remove(element)
+			if element in checkers and not element in self.elements_comparison:
+				self.elements_comparison.append(element)
+
+		"""create plots for each element that is to be compared """
+	
+		for comparison_element in self.elements_comparison: 
+
+			colour_list = [(102, 153, 51),(102, 51, 153),(51, 102, 153), (51, 153, 51) ,(153, 51, 51), (51, 51, 153), (153, 51,153 ), (153, 51, 51)]
+			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log")
+
+			for attr_id in self.attribute_ids:
+				
+				list_of_datasets = getattr(self, attr_id)
+
+				for dataset in list_of_datasets:
+
+					if dataset["sample element"] == comparison_element:
+
+						color = random.choice(colour_list)
+						colour_list.remove(color)
+
+						x_data = dataset["data"][0]
+						y_data = dataset["data"][1]
+
+						figure_obj.line(x_data, y_data, line_width = 2, line_color = color, legend = attr_id)
+			tab_plots.append(Panel(child = figure_obj, title = comparison_element))	
+
 		tabs = Tabs(tabs = tab_plots)
 		show(tabs)
-
-
-
-
 
 
 	def find_file_path(self, filename):
