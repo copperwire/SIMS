@@ -1,6 +1,9 @@
-from bokeh.models.widgets import Panel, Tabs
-from bokeh.io import output_file, show
-from bokeh.plotting import figure
+from bokeh.models.widgets import Panel, Tabs, TextInput, RadioGroup
+from bokeh.models.sources import ColumnDataSource
+from bokeh.io import output_file, show, vform, hplot
+from bokeh.palettes import Spectral11, RdPu9
+from bokeh.plotting import figure, output_server, curdoc
+from bokeh.client import push_session
 from bokeh.models import Range1d, LogAxis
 
 import random
@@ -11,10 +14,14 @@ class interactive_plotting:
 
 	def __init__(self, filenames):
 
+		self.generation = False
 		self.filenames = filenames
 
 		if not isinstance(self.filenames, (list, np.ndarray, tuple, set)):
 			self.filenames = [self.filenames]
+
+		if not self.filenames:
+			raise TypeError("Filnames can't be an empty list")
 
 
 	def data_generation (self):
@@ -36,6 +43,7 @@ class interactive_plotting:
 			sample element = name of the element measured by the SIMS process  		 
 		"""
 
+		self.generation = True
 		self.attribute_ids = []
 
 		for filename in self.filenames:
@@ -54,31 +62,32 @@ class interactive_plotting:
 	def plotting(self):
 
 		tab_plots = []
-		output_file("test.html")
+		#output_file("test.html")
 		self.all_elements = []
 		self.elements_comparison = []
 
-
-		for attr_id in self.attribute_ids:
+		for attr_id, i in zip(self.attribute_ids, range(len(self.attribute_ids))):
 			
 			"""
 			create plots for each datafile and put them in a tab.
 			"""
 			list_of_datasets = getattr(self, attr_id)
 			y_axis_units = [x["y_unit"] for x in list_of_datasets]
-			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log")
+			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log", title = "this is a thing")
+
 			figure_obj.yaxis.axis_label = y_axis_units[0]
 
 			if not all(x == y_axis_units[0] for x in y_axis_units):
-				for unit in y_axis_units: 
+				for unit, data in zip(y_axis_units, list_of_datasets): 
 					if not unit == y_axis_units[0]:
-						figure_obj.extra_y_ranges =  {"foo": Range1d(start = np.amin(y_data), end = np.amax(y_data))}
+						figure_obj.extra_y_ranges =  {"foo": Range1d(start = np.amin(data["data"]["y"]), end = np.amax(data["data"]["y"]))}
 						figure_obj.add_layout(LogAxis(y_range_name = "foo", axis_label = unit), "right")
 						break
 
 			figure_obj.xaxis.axis_label = list_of_datasets[0]["x_unit"]
-			colour_list = [(51, 153, 51) ,(153, 51, 51), (51, 51, 153), (153, 51,153 ), (153, 51, 51)]
+			colour_list = Spectral11 + RdPu9
 
+			list_of_elements = []
 
 			for dataset in list_of_datasets:
 
@@ -86,19 +95,32 @@ class interactive_plotting:
 				color = random.choice(colour_list)
 				colour_list.remove(color)
 
-				x_data = dataset["data"][0]
-				y_data = dataset["data"][1]
+				source = ColumnDataSource(data = dataset["data"]) #Datastructure for source of plotting
+
+				setattr(self, attr_id+"_"+dataset["sample element"]+"_source", source) #Source element generalized for all plotting 
+
+				list_of_elements.append(dataset["sample element"])
 
 				if not dataset["y_unit"] == y_axis_units[0] : 
 					"""
 					Assumes one scale for Intensity and a shift of some orders of maginitude in the conversion to Concentration.
 					"""
-					figure_obj.line(x_data, y_data, line_width = 2, line_color = color, legend = dataset["sample element"], y_range_name = "foo")
-
+					figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, line_color = color, legend = dataset["sample element"], y_range_name = "foo", name = dataset["sample element"])
+				
 				else: 
-					figure_obj.line(x_data, y_data, line_width = 2, line_color = color, legend = dataset["sample element"])	
-					#figure_obj.yaxis[0].axis_label = dataset["y_unit"]
-			tab_plots.append(Panel(child = figure_obj, title = attr_id))
+					figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, line_color = color, legend = dataset["sample element"], name = dataset["sample element"])
+
+			radio_group = RadioGroup(labels = list_of_elements, active=0)
+			text_input = TextInput(value = "default", title = "RSF for selected element: ")
+
+			radio_group.on_change("active", lambda attr, old, new: None)
+
+			text_input.on_change("value", lambda attr, old, new, radio = radio_group, 
+								identity = self.attribute_ids[i], text_input = text_input:
+								self.update_data(identity, radio, text_input, new))
+
+			tab_plots.append(Panel(child = hplot(figure_obj, vform(radio_group, text_input)), title = attr_id))
+
 
 		"""
 		Check to see if one or more element exists in the samples and creat a comparison plot for each 
@@ -115,7 +137,7 @@ class interactive_plotting:
 	
 		for comparison_element in self.elements_comparison: 
 
-			colour_list = [(102, 153, 51),(102, 51, 153),(51, 102, 153), (51, 153, 51) ,(153, 51, 51), (51, 51, 153), (153, 51,153 ), (153, 51, 51)]
+			colour_list = Spectral11 + RdPu9
 			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log")
 
 			for attr_id in self.attribute_ids:
@@ -123,21 +145,49 @@ class interactive_plotting:
 				list_of_datasets = getattr(self, attr_id)
 
 				for dataset in list_of_datasets:
-
 					if dataset["sample element"] == comparison_element:
 
 						color = random.choice(colour_list)
 						colour_list.remove(color)
-
-						x_data = dataset["data"][0]
-						y_data = dataset["data"][1]
-
-						figure_obj.line(x_data, y_data, line_width = 2, line_color = color, legend = attr_id)
+						figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, line_color = color, legend = attr_id)
+			
 			tab_plots.append(Panel(child = figure_obj, title = comparison_element))	
 
 		tabs = Tabs(tabs = tab_plots)
-		show(tabs)
 
+		session = push_session(curdoc())
+		session.show()
+		session.loop_until_closed()
+
+	def raw_data(self):
+
+		if self.generation:
+			y = {}
+			for name in self.attribute_ids:
+				y[name] = getattr(self, name)
+			return y	
+		else:
+			self.data_generation()
+			self.raw_data()
+
+	def update_data(self, attrname, radio, text_input, new):
+		element = radio.labels[radio.active]
+
+		print("hello")
+		
+		try:
+			RSF = float(new)
+		except ValueError:
+			RSF = 1.
+			#text_input.value = "ERROR: PLEASE INPUT NUMBER"
+
+		source_local = getattr(self, attrname+"_"+element+"_source")  #attr_id+"_"+dataset["sample element"]+"_source"
+
+		x = source_local.data["x"]
+		y = RSF*source_local.data["y"]
+
+		source_local.data = dict(x = x, y = y) 
+		
 
 	def find_file_path(self, filename):
 		return filename
