@@ -69,10 +69,12 @@ class file_handler:
 				setattr(self, str(lines[index_of_data_type][4:-4]), lines[index_of_data_type + 1: data_type_indices[i + 1 ] - 1]) 
 			
 		
-	def data_conversion(self, data_name = "DATA START", key_row= [2, 3]):
+	def data_conversion(self, data_name = "DATA START", key_row= [2, 3], nonposy = True):
 		"""
 		Strictly needs to be run after the file_iteration method.
 		Formats the strings contained in the data_name attribute of the class to float.
+		To accomodate log-plots the default is to make a correction to the y axis such that 
+		non-positive and small numbers are set to 1. 
 
 		Keyword arguments:
 		data_name (string) = string following delimiter before the data set.
@@ -112,6 +114,7 @@ class file_handler:
 		for line in data_set[key_row[1] + 1:] :
 			dat = line.split(" ")
 			a = [float(c) for c in dat]
+			#a = [1 for num in a if np.log(num) <= 0] 
 			x.append(a)
 
 		reshaping = np.shape(x)
@@ -126,7 +129,7 @@ class file_handler:
 			if variables_per_substance == 2 and x[0][0] != 0 :
 				units = [x for x in units if x != "Time"]
 
-			y["data"] = [u[:,number], u[:,number + 1]]
+			y["data"] = {"x": u[:,number], "y": u[:,number + 1]}
 			y["x_unit"] = units[number]
 			y["y_unit"] = units[number + 1]
 			y["sample info"] = getattr(self, "DATA FILES")
