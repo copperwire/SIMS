@@ -1,10 +1,11 @@
-from bokeh.models.widgets import Panel, Tabs, TextInput, RadioGroup
+from bokeh.models import HoverTool, TapTool, BoxZoomTool, BoxSelectTool, PreviewSaveTool, ResetTool
+from bokeh.models.widgets import Panel, Tabs, TextInput, RadioGroup, Button
 from bokeh.models.sources import ColumnDataSource
 from bokeh.io import output_file, show, vform, hplot
-from bokeh.palettes import Spectral11, RdPu9
+from bokeh.palettes import Spectral11, RdPu9, Oranges9
 from bokeh.plotting import figure, output_server, curdoc
 from bokeh.client import push_session
-from bokeh.models import Range1d, LogAxis
+from bokeh.models import Range1d, LogAxis, LinearAxis
 
 import random
 import numpy as np 
@@ -61,6 +62,12 @@ class interactive_plotting:
 
 	def plotting(self):
 
+
+
+		#Tools = [hover, TapTool(), BoxZoomTool(), BoxSelectTool(), PreviewSaveTool(), ResetTool()]
+		TOOLS="crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave"
+
+
 		tab_plots = []
 		#output_file("test.html")
 		self.all_elements = []
@@ -73,53 +80,106 @@ class interactive_plotting:
 			"""
 			list_of_datasets = getattr(self, attr_id)
 			y_axis_units = [x["y_unit"] for x in list_of_datasets]
-			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log", title = "this is a thing")
+			x_axis_units = [x["x_unit"] for x in list_of_datasets]
+
+			print(y_axis_units)
+			print("***********************")
+			print(x_axis_units)
+			print("------------------------")
+
+			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log",
+			title = attr_id, tools = TOOLS)
+
+			setattr(self, attr_id+"_"+"figure_obj",figure_obj)
 
 			figure_obj.yaxis.axis_label = y_axis_units[0]
+			figure_obj.xaxis.axis_label = x_axis_units[0]
 
 			if not all(x == y_axis_units[0] for x in y_axis_units):
 				for unit, data in zip(y_axis_units, list_of_datasets): 
 					if not unit == y_axis_units[0]:
-						figure_obj.extra_y_ranges =  {"foo": Range1d(start = np.amin(data["data"]["y"]), end = np.amax(data["data"]["y"]))}
+						figure_obj.extra_y_ranges =  {"foo": Range1d(start = np.amin(data["data"]["y"]),
+						end = np.amax(data["data"]["y"]))}
 						figure_obj.add_layout(LogAxis(y_range_name = "foo", axis_label = unit), "right")
 						break
 
+			if not all(x == x_axis_units[0] for x in x_axis_units):
+				for unit, data in zip(x_axis_units, list_of_datasets): 
+					if not unit == x_axis_units[0]:
+						figure_obj.extra_x_ranges =  {"bar": Range1d(start = np.amin(data["data"]["x"]),
+						end = np.amax(data["data"]["x"]))}
+						figure_obj.add_layout(LinearAxis(x_range_name = "bar", axis_label = unit), "above")
+						break
+
+
+
 			figure_obj.xaxis.axis_label = list_of_datasets[0]["x_unit"]
-			colour_list = Spectral11 + RdPu9
+			colour_list = Spectral11 + RdPu9 + Oranges9
+			colour_indices = [0, 2, 8, 10, 12, 14, 20, 22, 1, 3, 9, 11, 13, 15]
 
 			list_of_elements = []
 
-			for dataset in list_of_datasets:
+			for dataset, color_index in zip(list_of_datasets, colour_indices):
 
 				self.all_elements.append(dataset["sample element"]) #strip isotope number 
-				color = random.choice(colour_list)
-				colour_list.remove(color)
+				color = colour_list[color_index]
 
 				source = ColumnDataSource(data = dataset["data"]) #Datastructure for source of plotting
 
-				setattr(self, attr_id+"_"+dataset["sample element"]+"_source", source) #Source element generalized for all plotting 
+				setattr(self, attr_id+"_"+dataset["sample element"]+"_source", source) #Source element generalized for all plotting				
+
 
 				list_of_elements.append(dataset["sample element"])
 
-				if not dataset["y_unit"] == y_axis_units[0] : 
-					"""
-					Assumes one scale for Intensity and a shift of some orders of maginitude in the conversion to Concentration.
-					"""
-					figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, line_color = color, legend = dataset["sample element"], y_range_name = "foo", name = dataset["sample element"])
-				
-				else: 
-					figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, line_color = color, legend = dataset["sample element"], name = dataset["sample element"])
+				figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]
+								+"_source"), line_width = 2, line_color = color, 
+								legend = dataset["sample element"], name = dataset["sample element"],
+								 )
+
+			hover = figure_obj.select_one(HoverTool).tooltips = [("element", "@element"), ("(x,y)", "($x, $y)")]
 
 			radio_group = RadioGroup(labels = list_of_elements, active=0)
-			text_input = TextInput(value = "default", title = "RSF for selected element: ")
 
+			"""
+			Need to fetch default variables from input file and replace DEFAULT
+
+			Block of code produces the layout of buttons and callbacks
+			"""
+
+			
+			
+			text_input_rsf = TextInput(value = "default", title = "RSF (at/cm^3): ")
+			text_input_sputter = TextInput(value = "default", title = "Sputter speed in um/s")
+			text_input_crater_depth = TextInput(value = "default", title = "Depth of crater in um")
 			radio_group.on_change("active", lambda attr, old, new: None)
 
-			text_input.on_change("value", lambda attr, old, new, radio = radio_group, 
-								identity = self.attribute_ids[i], text_input = text_input:
-								self.update_data(identity, radio, text_input, new))
+			text_input_xval_integral = TextInput(value = "0", title = "x-value for calibration integral ")
+			text_input_yval_integral = TextInput(value = "0", title = "y-value for calibration integral ")
 
-			tab_plots.append(Panel(child = hplot(figure_obj, vform(radio_group, text_input)), title = attr_id))
+			do_integral_button = Button(label = "Calibration Integral")
+
+			do_integral_button.on_click(lambda identity = self.attribute_ids[i], radio = radio_group, x_box = text_input_xval_integral, 
+										y_box = text_input_yval_integral: self.integrate(identity, radio, x_box, y_box))
+
+			text_input_rsf.on_change("value", lambda attr, old, new, radio = radio_group, 
+								identity = self.attribute_ids[i], text_input = text_input_rsf, which = "rsf":
+								self.update_data(identity, radio, text_input, new, which))
+
+			text_input_sputter.on_change("value", lambda attr, old, new, radio = radio_group, 
+								identity = self.attribute_ids[i], text_input = text_input_sputter, which = "sputter":
+								self.update_data(identity, radio, text_input, new, which))
+
+			text_input_crater_depth.on_change("value", lambda attr, old, new, radio = radio_group, 
+								identity = self.attribute_ids[i], text_input = text_input_crater_depth, which = "crater_depth":
+								self.update_data(identity, radio, text_input, new, which))
+
+
+
+			tab_plots.append(Panel(child = hplot(figure_obj, 
+										   radio_group, 
+										   vform(text_input_rsf, text_input_sputter, text_input_crater_depth),
+										   vform(text_input_xval_integral, text_input_yval_integral, do_integral_button)),
+										   title = attr_id))
 
 
 		"""
@@ -137,20 +197,85 @@ class interactive_plotting:
 	
 		for comparison_element in self.elements_comparison: 
 
-			colour_list = Spectral11 + RdPu9
-			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log")
+			print("-------------"+comparison_element+"----------------------")
 
-			for attr_id in self.attribute_ids:
-				
+			colour_list = Spectral11 + RdPu9 + Oranges9
+			colour_indices = [0, 2, 8, 10, 12, 14, 20, 22, 1, 3, 9, 11, 13, 15]
+			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log", title = comparison_element)
+
+			y_axis_units = []
+			x_axis_units = []
+
+			comparison_datasets = []
+
+
+			for attr_id, color_index in zip(self.attribute_ids, colour_indices):
+
 				list_of_datasets = getattr(self, attr_id)
 
 				for dataset in list_of_datasets:
-					if dataset["sample element"] == comparison_element:
 
-						color = random.choice(colour_list)
-						colour_list.remove(color)
-						figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, line_color = color, legend = attr_id)
-			
+					if dataset["sample element"] == comparison_element:
+						comparison_datasets.append(dataset)
+						y_axis_units.append(dataset["y_unit"])
+						x_axis_units.append(dataset["x_unit"])
+
+			figure_obj.xaxis.axis_label = comparison_datasets[-1]["x_unit"]
+			figure_obj.yaxis.axis_label = comparison_datasets[-1]["y_unit"]
+
+			if not all(x == y_axis_units[-1] for x in y_axis_units):
+				for unit, data in zip(y_axis_units, comparison_datasets): 
+					if not unit == y_axis_units[-1]:
+						figure_obj.extra_y_ranges =  {"foo": Range1d(start = np.amin(data["data"]["y"]),
+						end = np.amax(data["data"]["y"]))}
+						figure_obj.add_layout(LogAxis(y_range_name = "foo", axis_label = unit), "right")
+						break
+
+			if not all(x == x_axis_units[-1] for x in x_axis_units):
+				for unit, data in zip(x_axis_units, comparison_datasets): 
+					if not unit == x_axis_units[-1]:
+						figure_obj.extra_x_ranges =  {"bar": Range1d(start = np.amin(data["data"]["x"]),
+						end = np.amax(data["data"]["x"]))}
+						figure_obj.add_layout(LinearAxis(x_range_name = "bar", axis_label = unit), "above")
+						break
+
+
+			for attr_id, color_index in zip(self.attribute_ids, colour_indices):
+
+				list_of_datasets = getattr(self, attr_id)
+
+				for dataset in list_of_datasets:
+
+					if dataset["sample element"] == comparison_element:
+						print(dataset["x_unit"])
+						color = colour_list[color_index]
+
+						"""
+						Logic that ensures that plots get put with correspoinding axes. 
+						"""
+						if dataset["x_unit"] != x_axis_units[-1] or dataset["y_unit"] != y_axis_units[-1]:
+
+							if dataset["x_unit"] != x_axis_units[-1] and dataset["y_unit"] != y_axis_units[-1]:
+
+								figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, 
+								line_color = color, legend = attr_id, x_range_name = "bar", y_range_name = "foo")
+
+							elif dataset["x_unit"] != x_axis_units[-1]:
+
+								figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, 
+								line_color = color, legend = attr_id, x_range_name = "bar")
+
+							else: 
+
+								figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, 
+								line_color = color, legend = attr_id, y_range_name = "foo")
+
+						else: 
+							figure_obj.line("x", "y", source = getattr(self, attr_id+"_"+dataset["sample element"]+"_source"), line_width = 2, 
+							line_color = color, legend = attr_id)
+						
+
+
 			tab_plots.append(Panel(child = figure_obj, title = comparison_element))	
 
 		tabs = Tabs(tabs = tab_plots)
@@ -170,23 +295,82 @@ class interactive_plotting:
 			self.data_generation()
 			self.raw_data()
 
-	def update_data(self, attrname, radio, text_input, new):
+	def integrate(self,  attrname, radio, x_box, y_box):
+
 		element = radio.labels[radio.active]
+		source_local = getattr(self, attrname+"_"+element+"_source") 
 
-		print("hello")
+		lower_xlim = float(x_box.value)
+		lower_ylim = float(y_box.value)
+
+		x = np.array(source_local.data["x"])
+		y = np.array(source_local.data["y"])
+
+		x_change = x[x>lower_xlim]
+		y_change = y[len(y)-len(x_change):]
+
+		integral = np.trapz(y_change, x = x_change)
+
+		print(integral)
+
+	def update_data(self, attrname, radio, text_input, new, which):
+
+		if which == "rsf":
+			element = radio.labels[radio.active]
+			
+			try:
+				RSF = float(new)
+			except ValueError:
+				RSF = 1.
+				#text_input.value = "ERROR: PLEASE INPUT NUMBER"
+
+			source_local = getattr(self, attrname+"_"+element+"_source")  #attr_id+"_"+dataset["sample element"]+"_source"
+
+			x = np.array(source_local.data["x"])
+			y = np.array(source_local.data["y"])
+
+			x = x
+			y = RSF*y
+
+			source_local.data = dict(x = x, y = y) 
 		
-		try:
-			RSF = float(new)
-		except ValueError:
-			RSF = 1.
-			#text_input.value = "ERROR: PLEASE INPUT NUMBER"
+		elif which == "sputter" or which == "crater_depth":
+			"""
+			Should create new axis and push to active session to replace the plot? 
+			Or simply append new x-axis? Need to identify if there exists a second x-axis allready
+			"""
 
-		source_local = getattr(self, attrname+"_"+element+"_source")  #attr_id+"_"+dataset["sample element"]+"_source"
+			source_local = getattr(self, attrname+"_"+element+"_source")  #attr_id+"_"+dataset["sample element"]+"_source"
+			x = np.array(source_local.data["x"])
+			y = np.array(source_local.data["y"])
 
-		x = source_local.data["x"]
-		y = RSF*source_local.data["y"]
+			if which == "sputter":
+				try:
+					sputter_speed = float(new)
+				except ValueError:
+					sputter_speed = 1.
 
-		source_local.data = dict(x = x, y = y) 
+			elif which == "crater_depth":
+				try: 
+					sputter_speed = float(new) / x[-1] 
+
+			figure_obj = getattr(self, attrname+"_"+"figure_obj")
+
+
+			for element in radio.labels: 
+
+
+				x = x*sputter_speed
+				y = y
+
+				source_local.data = dict(x = x, y = y) 
+
+				"""
+				figure_obj.extra_x_ranges =  {"bar": Range1d(start = np.amin(x),
+				end = np.amax(x))}
+				figure_obj.add_layout(LinearAxis(x_range_name = "bar", axis_label = "Depth[um]"), "above")
+				"""
+
 		
 
 	def find_file_path(self, filename):
