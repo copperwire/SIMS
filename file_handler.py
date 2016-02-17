@@ -2,6 +2,7 @@ import sys
 import os 
 import numpy as np
 
+
 class file_handler:
 	"""
 	Public methods:
@@ -64,10 +65,14 @@ class file_handler:
 			self.attribute_names = []
 
 
-			for index_of_data_type, i in zip(data_type_indices, np.arange(0, len(data_type_indices)-1, 1,  dtype = int)): 
+			for index_of_data_type, i in zip(data_type_indices, np.arange(0, len(data_type_indices), 1,  dtype = int)): 
+				print(str(lines[index_of_data_type][4:-4]))
 				self.attribute_names.append(str(lines[index_of_data_type][4:-4]))
-				setattr(self, str(lines[index_of_data_type][4:-4]), lines[index_of_data_type + 1: data_type_indices[i + 1 ] - 1]) 
-			
+				try:
+					setattr(self, str(lines[index_of_data_type][4:-4]), lines[index_of_data_type + 1: data_type_indices[i + 1 ] - 1]) 
+				except IndexError: 
+					setattr(self, str(lines[index_of_data_type][4:-4]), lines[index_of_data_type + 1: ])
+
 		
 	def data_conversion(self, data_name = "DATA START", key_row= [2, 3], nonposy = True):
 		"""
@@ -114,7 +119,24 @@ class file_handler:
 		for line in data_set[key_row[1] + 1:] :
 			dat = line.split(" ")
 			a = [float(c) for c in dat]
-			#a = [1 for num in a if np.log(num) <= 0] 
+			y = []
+
+			"""
+			Making the arrays log-friendly by adding 1 to all zero or less than one elements. 
+			"""
+
+			y.append(a[0])
+			for i in range(1, len(a)):
+				if i % 2 == 1:
+					if a[i] < 1:
+						a[i] = a[i] + 1
+					else: 
+						a[i] = a[i]
+				else:
+					a[i] = a[i]
+
+
+
 			x.append(a)
 
 		reshaping = np.shape(x)
@@ -126,22 +148,29 @@ class file_handler:
 
 		for name, number in zip(self.substances, np.arange(0, len(x[0]), 2, dtype = int)):
 			y = {}
-			if variables_per_substance == 2 and x[0][0] != 0 :
-				units = [x for x in units if x != "Time"]
 
-			y["data"] = {"x": u[:,number], "y": u[:,number + 1]}
+			if u[0][number] < 1e-1:
+				units.pop(number)
+			else:
+				units.pop(number+1)
+
+			y["data"] = {"x": np.array(u[:,number]), "y": np.array(u[:,number + 1]), "element": [name for i in range(len(np.array(u[:,number + 1])))]}
 			y["x_unit"] = units[number]
 			y["y_unit"] = units[number + 1]
-			y["sample info"] = getattr(self, "DATA FILES")
+			data_files = getattr(self, "DATA FILES")
+			data_files = [line.split(" ") for line in data_files]
+			y["sample info"] = data_files
+
+			calibration_params = getattr(self, "CALIBRATION PARAMETERS")
+			calibration_params = [line.split(" ") for line in calibration_params]
+			y["calibration_params"] = calibration_params
 			y["sample element"] = name
 
 			setattr(self, name, y)
 			self.list_of_datasets.append(getattr(self, name))
 
-
-
-
 		return self.list_of_datasets
+
 
 	def runtime(self, delim = "***", data_name = "DATA START", key_row= [2, 3]):
 		"""
@@ -153,6 +182,5 @@ class file_handler:
 		x = self.data_conversion(data_name, key_row)
 
 		return (self.substances, x)
-
 
 
