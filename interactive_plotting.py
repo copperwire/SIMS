@@ -7,6 +7,7 @@ from bokeh.plotting import figure, output_server, curdoc
 from bokeh.client import push_session
 from bokeh.models import Range1d, LogAxis, LinearAxis
 
+import os
 import random
 import numpy as np 
 from file_handler import file_handler
@@ -48,14 +49,14 @@ class interactive_plotting:
 		self.attribute_ids = []
 
 		for filename in self.filenames:
-			full_path_to_file = self.find_file_path(filename)
 
-			class_instance = file_handler(full_path_to_file)
+			class_instance = file_handler(filename)
 			class_instance.file_iteration()
 			data_sets = class_instance.data_conversion()
 
-			name_check = data_sets[0]["sample info"]
-			attr_id = name_check[1].split(" ")[4][:-3] + "_" + name_check[2].split(" ")[2]
+			name_check = data_sets[0]["DATA FILES"]
+
+			attr_id = name_check[1][4][:-3] + "_" + name_check[2][2]
 
 			self.attribute_ids.append(attr_id)
 			setattr(self, attr_id, data_sets)
@@ -81,11 +82,6 @@ class interactive_plotting:
 			list_of_datasets = getattr(self, attr_id)
 			y_axis_units = [x["y_unit"] for x in list_of_datasets]
 			x_axis_units = [x["x_unit"] for x in list_of_datasets]
-
-			print(y_axis_units)
-			print("***********************")
-			print(x_axis_units)
-			print("------------------------")
 
 			figure_obj = figure(plot_width = 1000, plot_height = 800, y_axis_type = "log",
 			title = attr_id, tools = TOOLS)
@@ -149,17 +145,19 @@ class interactive_plotting:
 			
 			
 			text_input_rsf = TextInput(value = "default", title = "RSF (at/cm^3): ")
-			text_input_sputter = TextInput(value = "default", title = "Sputter speed in um/s")
-			text_input_crater_depth = TextInput(value = "default", title = "Depth of crater in um")
+			text_input_sputter = TextInput(value = "default", title = "Sputter speed: float unit")
+			text_input_crater_depth = TextInput(value = "default", title = "Depth of crater in: float")
 			radio_group.on_change("active", lambda attr, old, new: None)
 
 			text_input_xval_integral = TextInput(value = "0", title = "x-value for calibration integral ")
 			text_input_yval_integral = TextInput(value = "0", title = "y-value for calibration integral ")
 
 			do_integral_button = Button(label = "Calibration Integral")
+			save_flexDPE_button = Button(label = "Save file for FlexPDE")
 
-			do_integral_button.on_click(lambda identity = self.attribute_ids[i], radio = radio_group, x_box = text_input_xval_integral, 
-										y_box = text_input_yval_integral: self.integrate(identity, radio, x_box, y_box))
+			do_integral_button.on_click(lambda identity = self.attribute_ids[i], radio = radio_group, x_box = text_input_xval_integral, y_box = text_input_yval_integral: self.integrate(identity, radio, x_box, y_box))
+
+			save_flexDPE_button.on_click(lambda identity = self.attribute_ids[i], radio = radio_group: self.write_to_flexPDE(identity, radio))
 
 			text_input_rsf.on_change("value", lambda attr, old, new, radio = radio_group, 
 								identity = self.attribute_ids[i], text_input = text_input_rsf, which = "rsf":
@@ -176,7 +174,7 @@ class interactive_plotting:
 
 
 			tab_plots.append(Panel(child = hplot(figure_obj, 
-										   radio_group, 
+										   vform(radio_group, save_flexDPE_button), 
 										   vform(text_input_rsf, text_input_sputter, text_input_crater_depth),
 										   vform(text_input_xval_integral, text_input_yval_integral, do_integral_button)),
 										   title = attr_id))
@@ -196,8 +194,6 @@ class interactive_plotting:
 		"""create plots for each element that is to be compared """
 	
 		for comparison_element in self.elements_comparison: 
-
-			print("-------------"+comparison_element+"----------------------")
 
 			colour_list = Spectral11 + RdPu9 + Oranges9
 			colour_indices = [0, 2, 8, 10, 12, 14, 20, 22, 1, 3, 9, 11, 13, 15]
@@ -247,7 +243,6 @@ class interactive_plotting:
 				for dataset in list_of_datasets:
 
 					if dataset["sample element"] == comparison_element:
-						print(dataset["x_unit"])
 						color = colour_list[color_index]
 
 						"""
@@ -306,12 +301,46 @@ class interactive_plotting:
 		x = np.array(source_local.data["x"])
 		y = np.array(source_local.data["y"])
 
-		x_change = x[x>lower_xlim]
+		x_change = x[x>lower_xlim]*1e-4 
 		y_change = y[len(y)-len(x_change):]
 
 		integral = np.trapz(y_change, x = x_change)
 
-		print(integral)
+		comparsion = np.sum(y) * x[-1]*1e-4
+
+		print(integral, comparsion)
+
+	def write_to_flexPDE(self, attrname, radio):
+		element = radio.labels[radio.active]
+
+		source_local = getattr(self, attrname+"_"+element+"_source")  #attr_id+"_"+dataset["sample element"]+"_source"
+
+		x = np.array(source_local.data["x"])
+		y = np.array(source_local.data["y"])
+
+		path_to_direct = os.getcwd()
+		path_to_flex = path_to_direct + "/data_files/FlexPDE/"
+		write_to_filename = path_to_flex+attrname+ "_"+element+".txt"
+
+		file_object = open(write_to_filename, "w+")
+
+		file_object.write("X %i \n" %len(x)) 
+		
+		for item in x: 
+			file_object.write("%1.3f " %item) 
+
+		file_object.write("\nData {u} \n")
+
+		for item in y: 
+			file_object.write("%1.1e " %item) 
+
+		file_object.close()
+
+	def write_new_datafile(self, attrname, radio):
+		radio_group = radio
+
+
+
 
 	def update_data(self, attrname, radio, text_input, new, which):
 
@@ -332,7 +361,7 @@ class interactive_plotting:
 			x = x
 			y = RSF*y
 
-			source_local.data = dict(x = x, y = y) 
+			source_local.data = dict(x = x, y = y, element = [name for i in range(len(np.array(u[:,number + 1])))]) 
 		
 		elif which == "sputter" or which == "crater_depth":
 			"""
@@ -340,38 +369,31 @@ class interactive_plotting:
 			Or simply append new x-axis? Need to identify if there exists a second x-axis allready
 			"""
 
-			source_local = getattr(self, attrname+"_"+element+"_source")  #attr_id+"_"+dataset["sample element"]+"_source"
-			x = np.array(source_local.data["x"])
-			y = np.array(source_local.data["y"])
 
 			if which == "sputter":
 				try:
-					sputter_speed = float(new)
+					sputter_speed, unit = new.split()
+					sputter_speed = float(sputter_speed) 
 				except ValueError:
-					sputter_speed = 1.
+					return
 
 			elif which == "crater_depth":
 				try: 
-					sputter_speed = float(new) / x[-1] 
+					sputter_speed, unit = new.split()
+					sputter_speed = float(sputter_speed) / x[-1]
+
+				except ValueError:
+					return
 
 			figure_obj = getattr(self, attrname+"_"+"figure_obj")
 
 
 			for element in radio.labels: 
-
+				source_local = getattr(self, attrname+"_"+element+"_source")  #attr_id+"_"+dataset["sample element"]+"_source"
+				x = np.array(source_local.data["x"])
+				y = np.array(source_local.data["y"])
 
 				x = x*sputter_speed
-				y = y
-
+				
 				source_local.data = dict(x = x, y = y) 
-
-				"""
-				figure_obj.extra_x_ranges =  {"bar": Range1d(start = np.amin(x),
-				end = np.amax(x))}
-				figure_obj.add_layout(LinearAxis(x_range_name = "bar", axis_label = "Depth[um]"), "above")
-				"""
-
-		
-
-	def find_file_path(self, filename):
-		return filename
+				figure_obj.xaxis.axis_label = "Depth " + " " + "[" + unit + "]"
