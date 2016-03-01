@@ -66,12 +66,13 @@ class file_handler:
 
 
 			for index_of_data_type, i in zip(data_type_indices, np.arange(0, len(data_type_indices), 1,  dtype = int)): 
-				print(str(lines[index_of_data_type][4:-4]))
-				self.attribute_names.append(str(lines[index_of_data_type][4:-4]))
+				attribute_name = str(lines[index_of_data_type][4:-4])
+
+				self.attribute_names.append(attribute_name)
 				try:
-					setattr(self, str(lines[index_of_data_type][4:-4]), lines[index_of_data_type + 1: data_type_indices[i + 1 ] - 1]) 
+					setattr(self, attribute_name, lines[index_of_data_type + 1: data_type_indices[i + 1 ] - 1]) 
 				except IndexError: 
-					setattr(self, str(lines[index_of_data_type][4:-4]), lines[index_of_data_type + 1: ])
+					setattr(self, attribute_name, lines[index_of_data_type + 1: ])
 
 		
 	def data_conversion(self, data_name = "DATA START", key_row= [2, 3], nonposy = True):
@@ -134,9 +135,6 @@ class file_handler:
 						a[i] = a[i]
 				else:
 					a[i] = a[i]
-
-
-
 			x.append(a)
 
 		reshaping = np.shape(x)
@@ -157,13 +155,13 @@ class file_handler:
 			y["data"] = {"x": np.array(u[:,number]), "y": np.array(u[:,number + 1]), "element": [name for i in range(len(np.array(u[:,number + 1])))]}
 			y["x_unit"] = units[number]
 			y["y_unit"] = units[number + 1]
-			data_files = getattr(self, "DATA FILES")
-			data_files = [line.split(" ") for line in data_files]
-			y["sample info"] = data_files
 
-			calibration_params = getattr(self, "CALIBRATION PARAMETERS")
-			calibration_params = [line.split(" ") for line in calibration_params]
-			y["calibration_params"] = calibration_params
+
+			for attribute in self.attribute_names:
+				value = getattr(self, attribute)
+				value = [line.split(" ") for line in value]
+				y[attribute] = value
+			
 			y["sample element"] = name
 
 			setattr(self, name, y)
