@@ -1,0 +1,9 @@
+# Element | RSF value
+Li 1.8e12
+Na 1.55e12
+Mg 1.5e13
+Si 1.7e14
+Mn 1.8e13
+Ni 9.3e13
+Fe 2.2e13
+Al 7.14e12
